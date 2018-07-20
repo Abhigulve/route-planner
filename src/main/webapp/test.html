@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html class="use-all-space">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="cache-control" content="max-age=0"/>
+    <meta http-equiv="cache-control" content="no-cache"/>
+    <meta http-equiv="expires" content="0"/>
+    <meta http-equiv="expires" content="Tue, 01 Jan 1980 1:00:00 GMT"/>
+    <meta http-equiv="pragma" content="no-cache"/>
+    <title>TomTom JavaScript SDK - Map initialization</title>
+
+    <link rel="stylesheet" type="text/css" href="sdk/map.css"/>
+    <link rel="stylesheet" type="text/css" href="sdk/elements.css">
+    <link rel="stylesheet" type="text/css" href="css/route.css">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <script src="sdk/tomtom.min.js"></script>
+    <script src="js/test.js"></script>
+    <script src="data/placesGeoJson.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+    <style type="text/css">
+
+        .star-checked {
+            color: orange;
+        }
+
+        .tomtom-control-panel {
+            border-radius: 2px;
+        }
+
+        @media ( max-height: 390px) {
+            .tomtom-foldable__content-body {
+                overflow-y: auto;
+            }
+        }
+
+        @media ( min-height: 391px) {
+            .tomtom-foldable__content-body {
+                overflow-y: hidden;
+            }
+        }
+
+        .tomtom-foldable__header {
+            display: none;
+        }
+
+        .loader.hidden {
+            display: none;
+        }
+
+        .loader {
+            opacity: 0.75;
+            display: block;
+            background: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 25%;
+        }
+
+        .loader:before {
+            margin: 30%;
+        }
+
+        #form {
+            width: 190px;
+            min-width: 190px;
+            margin-right: 0px;
+            padding: 0 5px;
+        }
+
+        #form h2 {
+            margin: -2px 0px;
+            font-size: 15px;
+            letter-spacing: 0.7px;
+        }
+
+        .og-context #form input[type=submit] {
+            margin: 0;
+        }
+
+        #form input[type=submit] {
+            margin: 14px 0 0px;
+            height: 25px !important;
+            border-radius: 4px;
+        }
+
+        #form li *, #form li {
+            cursor: pointer;
+        }
+
+        .leaflet-popup-content-wrapper .leaflet-popup-content {
+            margin: 10px;
+        }
+
+        label.select {
+            cursor: pointer;
+            margin-top: 9px;
+            height: 17px;
+            line-height: 17px;
+        }
+
+        label.select.empty {
+            display: none;
+        }
+
+        label.select li {
+            height: 21px;
+            line-height: 19px;
+        }
+
+        label.select {
+            background: #eaeaea;
+        }
+
+        label.select span.output {
+            border-left: solid 9px #eaeaea;
+        }
+
+        label.select ul.options::before {
+            content: ' ';
+            width: 100%;
+            height: 100%;
+            position: fixed;
+            left: 0;
+            top: 0;
+        }
+
+        label.select ul.options {
+            display: none;
+            list-style: none;
+            background-color: white;
+            z-index: 1001;
+            margin: 0;
+            padding: 5px 0;
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: calc(100% - 18px);
+            box-shadow: silver 0px 0px 10px;
+        }
+
+        label.select input[name='list-visible'] {
+            display: none;
+        }
+
+        label.select input[name='list-visible']:checked + ul.options {
+            display: block;
+        }
+
+        label.select li {
+            color: black;
+            opacity: 0.9;
+            background: #fafafa;
+            border-left: solid 9px #fafafa;
+            font-weight: 100;
+            letter-spacing: 0.5px;
+        }
+
+        label.select li:hover {
+            color: white;
+            background: #505050;
+            border-left: solid 9px #505050;
+        }
+
+        label.select::after {
+            width: 0px;
+            height: 0px;
+            content: ' ';
+            border: solid transparent 4px;
+            border-top-color: white;
+            position: absolute;
+            right: 5px;
+            top: 8px;
+            background: none;
+        }
+
+        label.select::before {
+            position: absolute;
+            top: 0;
+            right: 0;
+            display: block;
+            content: ' ';
+            background: #91af2d;
+            width: 18px;
+            height: 100%;
+        }
+
+        ul.cities {
+            list-style: none;
+            padding: 0;
+            margin: 7px 0 10px;
+        }
+
+        ul.cities li {
+            line-height: 23px;
+            letter-spacing: 0.3px;
+        }
+
+        ul.cities li::before {
+            content: 'x';
+            font-weight: bolder;
+            margin: 0 12px 0 7px;
+        }
+
+        ul.pois {
+            list-style: none;
+            padding: 0 0 0 25px;
+            position: relative;
+            margin: 3px 0;
+        }
+
+        ul.pois .text {
+            text-transform: capitalize;
+        }
+
+        ul.pois li {
+            line-height: 23px;
+            font-size: 15px;
+        }
+
+        ul.pois input:checked + .text::after {
+            content: '7';
+            color: white;
+            position: absolute;
+            left: -20px;
+            top: -2px;
+            transform: scaleX(-1) rotate(125deg);
+            font-family: monospace;
+        }
+
+        ul.pois input:checked + .text::before {
+            background: #91af2d;
+            border: #87a32a solid 1px;
+        }
+
+        ul.pois .text::before {
+            content: ' ';
+            width: 15px;
+            height: 15px;
+            background: #d7d7d7;
+            border: solid 1px #c9c9c9;
+            position: absolute;
+            left: -25px;
+            top: 2px;
+        }
+
+        ul.pois input[type=checkbox] {
+            display: none;
+        }
+
+        input[type='submit'] {
+            width: 100%;
+            height: 30px;
+            background: #91af2d;
+        }
+    </style>
+
+</head>
+<body class="use-all-space">
+<div class="btn pull-right" style="position: absolute;
+    float: right;
+    top: 110px;
+    right: 10px;
+    z-index: 1000;
+">
+    <button onclick="planRoute();">Plan Route</button>
+</div>
+<div id='loader' class='loader loader-center' style="display: none"></div>
+<div id="map" class="use-all-space" style="position: sticky"></div>
+
+
+<div class='sidepanel'
+     style="width: 200px;height: 500px;box-shadow: 10px 10px 5px grey;margin-top: -567px;background-color: #d7e1aa;overflow: scroll;position: fixed;z-index: 900">
+
+    <form id='form'>
+        <h2>Preferences</h2>
+        <ul class='pois'>
+            <li><label> <input name='category'
+                               value='Adventure Sports Venue' type='checkbox'> <span
+                    class='text'>Adventure Sports Venue</span>
+            </label>
+            <li><label><input name='category' value='Access Gateway'
+                              type='checkbox'><span class='text'>Access Gateway</span></label></li>
+            <li><label><input name='category'
+                              value='Adventure Sports Venue' type='checkbox'><span
+                    class='text'>Adventure Sports Venue</span></label></li>
+            <li><label><input name='category'
+                              value='Agriculture Business' type='checkbox'><span
+                    class='text'>Agriculture Business</span></label></li>
+            <li><label><input name='category' value='Airport'
+                              type='checkbox'><span class='text'>Airport</span></label></li>
+            <li><label><input name='category' value='Amusement Park'
+                              type='checkbox'><span class='text'>Amusement Park</span></label></li>
+            <li><label><input name='category'
+                              value='Automotive Dealer' type='checkbox'><span
+                    class='text'>Automotive Dealer</span></label></li>
+            <li><label><input name='category' value='Bank'
+                              type='checkbox'><span class='text'>Bank</span></label></li>
+            <li><label><input name='category' value='Beach'
+                              type='checkbox'><span class='text'>Beach</span></label></li>
+            <li><label><input name='category' value='Business Park'
+                              type='checkbox'><span class='text'>Business Park</span></label></li>
+            <li><label><input name='category' value='Café/Pub'
+                              type='checkbox'><span class='text'>Café/Pub</span></label></li>
+            <li><label><input name='category' value='Camping Ground'
+                              type='checkbox'><span class='text'>Camping Ground</span></label></li>
+            <li><label><input name='category' value='Car Wash'
+                              type='checkbox'><span class='text'>Car Wash</span></label></li>
+            <li><label><input name='category' value='Cash Dispenser'
+                              type='checkbox'><span class='text'>Cash Dispenser</span></label></li>
+            <li><label><input name='category' value='Casino'
+                              type='checkbox'><span class='text'>Casino</span></label></li>
+            <li><label><input name='category' value='Cemetery'
+                              type='checkbox'><span class='text'>Cemetery</span></label></li>
+            <li><label><input name='category' value='Checkpoint'
+                              type='checkbox'><span class='text'>Checkpoint</span></label></li>
+            <li><label><input name='category' value='Cinema'
+                              type='checkbox'><span class='text'>Cinema</span></label></li>
+            <li><label><input name='category' value='City Center'
+                              type='checkbox'><span class='text'>City Center</span></label></li>
+            <li><label><input name='category'
+                              value='Club & Association' type='checkbox'><span
+                    class='text'>Club & Association</span></label></li>
+            <li><label><input name='category'
+                              value='College/University' type='checkbox'><span
+                    class='text'>College/University</span></label></li>
+            <li><label><input name='category'
+                              value='Commercial Building' type='checkbox'><span
+                    class='text'>Commercial Building</span></label></li>
+            <li><label><input name='category'
+                              value='Community Center' type='checkbox'><span class='text'>Community
+						Center</span></label></li>
+            <li><label><input name='category' value='Company'
+                              type='checkbox'><span class='text'>Company</span></label></li>
+            <li><label><input name='category'
+                              value='Courier Drop Box' type='checkbox'><span class='text'>Courier
+						Drop Box</span></label></li>
+            <li><label><input name='category' value='Courthouse'
+                              type='checkbox'><span class='text'>Courthouse</span></label></li>
+            <li><label><input name='category'
+                              value='Cultural Center' type='checkbox'><span class='text'>Cultural
+						Center</span></label></li>
+            <li><label><input name='category' value='Dentist'
+                              type='checkbox'><span class='text'>Dentist</span></label></li>
+            <li><label><input name='category'
+                              value='Department Store' type='checkbox'><span class='text'>Department
+						Store</span></label></li>
+            <li><label><input name='category' value='Doctor'
+                              type='checkbox'><span class='text'>Doctor</span></label></li>
+            <li><label><input name='category'
+                              value='Electric Vehicle Station' type='checkbox'><span
+                    class='text'>Electric Vehicle Station</span></label></li>
+            <li><label><input name='category' value='Embassy'
+                              type='checkbox'><span class='text'>Embassy</span></label></li>
+            <li><label><input name='category'
+                              value='Emergency Medical Service' type='checkbox'><span
+                    class='text'>Emergency Medical Service</span></label></li>
+            <li><label><input name='category' value='Entertainment'
+                              type='checkbox'><span class='text'>Entertainment</span></label></li>
+            <li><label><input name='category' value='Entry Point'
+                              type='checkbox'><span class='text'>Entry Point</span></label></li>
+            <li><label><input name='category' value='Exchange'
+                              type='checkbox'><span class='text'>Exchange</span></label></li>
+            <li><label><input name='category'
+                              value='Exhibition & Convention Center' type='checkbox'><span
+                    class='text'>Exhibition & Convention Center</span></label></li>
+            <li><label><input name='category' value='Ferry Terminal'
+                              type='checkbox'><span class='text'>Ferry Terminal</span></label></li>
+            <li><label><input name='category'
+                              value='Fire Station/Brigade' type='checkbox'><span
+                    class='text'>Fire Station/Brigade</span></label></li>
+            <li><label><input name='category'
+                              value='Frontier Crossing' type='checkbox'><span
+                    class='text'>Frontier Crossing</span></label></li>
+            <li><label><input name='category'
+                              value='Geographic Feature' type='checkbox'><span
+                    class='text'>Geographic Feature</span></label></li>
+            <li><label><input name='category' value='Golf Course'
+                              type='checkbox'><span class='text'>Golf Course</span></label></li>
+            <li><label><input name='category'
+                              value='Government Office' type='checkbox'><span
+                    class='text'>Government Office</span></label></li>
+            <li><label><input name='category'
+                              value='Health Care Service' type='checkbox'><span
+                    class='text'>Health Care Service</span></label></li>
+            <li><label><input name='category'
+                              value='Helipad/Helicopter Landing' type='checkbox'><span
+                    class='text'>Helipad/Helicopter Landing</span></label></li>
+            <li><label><input name='category' value='Holiday Rental'
+                              type='checkbox'><span class='text'>Holiday Rental</span></label></li>
+            <li><label><input name='category'
+                              value='Hospital/Polyclinic' type='checkbox'><span
+                    class='text'>Hospital/Polyclinic</span></label></li>
+            <li><label><input name='category'
+                              value='Hospital/Polyclinic' type='checkbox'><span
+                    class='text'>Hospital/Polyclinic</span></label></li>
+            <li><label><input name='category' value='Hotel/Motel'
+                              type='checkbox'><span class='text'>Hotel/Motel</span></label></li>
+            <li><label><input name='category'
+                              value='Ice Skating Rink' type='checkbox'><span class='text'>Ice
+						Skating Rink</span></label></li>
+            <li><label><input name='category'
+                              value='Important Tourist Attraction' type='checkbox'><span
+                    class='text'>Important Tourist Attraction</span></label></li>
+            <li><label><input name='category'
+                              value='Industrial Building' type='checkbox'><span
+                    class='text'>Industrial Building</span></label></li>
+            <li><label><input name='category' value='Leisure Center'
+                              type='checkbox'><span class='text'>Leisure Center</span></label></li>
+            <li><label><input name='category' value='Library'
+                              type='checkbox'><span class='text'>Library</span></label></li>
+            <li><label><input name='category'
+                              value='Manufacturing Facility' type='checkbox'><span
+                    class='text'>Manufacturing Facility</span></label></li>
+            <li><label><input name='category' value='Marina'
+                              type='checkbox'><span class='text'>Marina</span></label></li>
+            <li><label><input name='category' value='Market'
+                              type='checkbox'><span class='text'>Market</span></label></li>
+            <li><label><input name='category' value='Media Facility'
+                              type='checkbox'><span class='text'>Media Facility</span></label></li>
+            <li><label><input name='category'
+                              value='Military Installation' type='checkbox'><span
+                    class='text'>Military Installation</span></label></li>
+            <li><label><input name='category'
+                              value='Motoring Organization Office' type='checkbox'><span
+                    class='text'>Motoring Organization Office</span></label></li>
+            <li><label><input name='category' value='Mountain Pass'
+                              type='checkbox'><span class='text'>Mountain Pass</span></label></li>
+            <li><label><input name='category' value='Museum'
+                              type='checkbox'><span class='text'>Museum</span></label></li>
+            <li><label><input name='category'
+                              value='Native Reservation' type='checkbox'><span
+                    class='text'>Native Reservation</span></label></li>
+            <li><label><input name='category' value='Nightlife'
+                              type='checkbox'><span class='text'>Nightlife</span></label></li>
+            <li><label><input name='category'
+                              value='Non Governmental Organization' type='checkbox'><span
+                    class='text'>Non Governmental Organization</span></label></li>
+            <li><label><input name='category'
+                              value='Open Parking Area' type='checkbox'><span
+                    class='text'>Open Parking Area</span></label></li>
+            <li><label><input name='category'
+                              value='Park and Recreation Area' type='checkbox'><span
+                    class='text'>Park and Recreation Area</span></label></li>
+            <li><label><input name='category' value='Parking Garage'
+                              type='checkbox'><span class='text'>Parking Garage</span></label></li>
+            <li><label><input name='category' value='Petrol Station'
+                              type='checkbox'><span class='text'>Petrol Station</span></label></li>
+            <li><label><input name='category' value='Pharmacy'
+                              type='checkbox'><span class='text'>Pharmacy</span></label></li>
+            <li><label><input name='category'
+                              value='Place of Worship' type='checkbox'><span class='text'>Place
+						of Worship</span></label></li>
+            <li><label><input name='category' value='Police Station'
+                              type='checkbox'><span class='text'>Police Station</span></label></li>
+            <li><label><input name='category'
+                              value='Port/Warehouse Facility' type='checkbox'><span
+                    class='text'>Port/Warehouse Facility</span></label></li>
+            <li><label><input name='category' value='Post Office'
+                              type='checkbox'><span class='text'>Post Office</span></label></li>
+            <li><label><input name='category'
+                              value='Primary Resource/Utility' type='checkbox'><span
+                    class='text'>Primary Resource/Utility</span></label></li>
+            <li><label><input name='category'
+                              value='Prison/Correctional Facility' type='checkbox'><span
+                    class='text'>Prison/Correctional Facility</span></label></li>
+            <li><label><input name='category' value='Public Amenity'
+                              type='checkbox'><span class='text'>Public Amenity</span></label></li>
+            <li><label><input name='category'
+                              value='Public Transport Stop' type='checkbox'><span
+                    class='text'>Public Transport Stop</span></label></li>
+            <li><label><input name='category'
+                              value='Railway Station' type='checkbox'><span class='text'>Railway
+						Station</span></label></li>
+            <li><label><input name='category'
+                              value='Rent-a-Car Facility' type='checkbox'><span
+                    class='text'>Rent-a-Car Facility</span></label></li>
+            <li><label><input name='category'
+                              value='Rent-a-Car Parking' type='checkbox'><span
+                    class='text'>Rent-a-Car Parking</span></label></li>
+            <li><label><input name='category'
+                              value='Repair Facility' type='checkbox'><span class='text'>Repair
+						Facility</span></label></li>
+            <li><label><input name='category'
+                              value='Research Facility' type='checkbox'><span
+                    class='text'>Research Facility</span></label></li>
+            <li><label><input name='category'
+                              value='Residential Accommodation' type='checkbox'><span
+                    class='text'>Residential Accommodation</span></label></li>
+            <li><label><input name='category' value='Rest Area'
+                              type='checkbox'><span class='text'>Rest Area</span></label></li>
+            <li><label><input name='category' value='Restaurant'
+                              type='checkbox'><span class='text'>Restaurant</span></label></li>
+            <li><label><input name='category'
+                              value='Restaurant Area' type='checkbox'><span class='text'>Restaurant
+						Area</span></label></li>
+            <li><label><input name='category'
+                              value='Scenic/Panoramic View' type='checkbox'><span
+                    class='text'>Scenic/Panoramic View</span></label></li>
+            <li><label><input name='category' value='School'
+                              type='checkbox'><span class='text'>School</span></label></li>
+            <li><label><input name='category' value='Shop'
+                              type='checkbox'><span class='text'>Shop</span></label></li>
+            <li><label><input name='category'
+                              value='Shopping Center' type='checkbox'><span class='text'>Shopping
+						Center</span></label></li>
+            <li><label><input name='category' value='Sports Center'
+                              type='checkbox'><span class='text'>Sports Center</span></label></li>
+            <li><label><input name='category' value='Stadium'
+                              type='checkbox'><span class='text'>Stadium</span></label></li>
+            <li><label><input name='category' value='Swimming Pool'
+                              type='checkbox'><span class='text'>Swimming Pool</span></label></li>
+            <li><label><input name='category' value='Tennis Court'
+                              type='checkbox'><span class='text'>Tennis Court</span></label></li>
+            <li><label><input name='category' value='Theater'
+                              type='checkbox'><span class='text'>Theater</span></label></li>
+            <li><label><input name='category' value='Toll Gate'
+                              type='checkbox'><span class='text'>Toll Gate</span></label></li>
+            <li><label><input name='category'
+                              value='Tourist Information Office' type='checkbox'><span
+                    class='text'>Tourist Information Office</span></label></li>
+            <li><label><input name='category'
+                              value='Traffic Service Center' type='checkbox'><span
+                    class='text'>Traffic Service Center</span></label></li>
+            <li><label><input name='category' value='Trail System'
+                              type='checkbox'><span class='text'>Trail System</span></label></li>
+            <li><label><input name='category'
+                              value='Transport Authority/Vehicle Registration' type='checkbox'><span
+                    class='text'>Transport Authority/Vehicle Registration</span></label></li>
+            <li><label><input name='category' value='Truck Stop'
+                              type='checkbox'><span class='text'>Truck Stop</span></label></li>
+            <li><label><input name='category' value='Veterinarian'
+                              type='checkbox'><span class='text'>Veterinarian</span></label></li>
+            <li><label><input name='category' value='Water Sport'
+                              type='checkbox'><span class='text'>Water Sport</span></label></li>
+            <li><label><input name='category' value='Weigh Station'
+                              type='checkbox'><span class='text'>Weigh Station</span></label></li>
+            <li><label><input name='category'
+                              value='Welfare Organization' type='checkbox'><span
+                    class='text'>Welfare Organization</span></label></li>
+            <li><label><input name='category' value='Winery'
+                              type='checkbox'><span class='text'>Winery</span></label></li>
+            <li><label><input name='category'
+                              value='Zoo, Arboreta & Botanical Garden' type='checkbox'><span
+                    class='text'>Zoo, Arboreta & Botanical Garden</span></label></li>
+
+        </ul>
+    </form>
+</div>
+<script src="js/map.js"></script>
+
+</body>
+</html>

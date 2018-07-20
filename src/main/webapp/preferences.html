@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html class='use-all-space'>
+<head>
+    <meta http-equiv='X-UA-Compatible' content='IE=Edge' />
+    <meta charset='UTF-8'>
+    <title>TomTom JavaScript SDK - Batch Search example</title>
+    <meta name='viewport' content='width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no'/>
+    <link rel='stylesheet' type='text/css' href='sdk/map.css'/>
+    <link rel='stylesheet' type='text/css' href='sdk/elements.css'/>
+    <script type='text/javascript' src='js/form.js'></script>
+    <script type='text/javascript' src='sdk/tomtom.min.js'></script>
+    
+
+<style type="text/css">
+	.tomtom-control-panel {
+        border-radius: 2px;
+    }
+    @media(max-height: 390px) {
+        .tomtom-foldable__content-body {
+            overflow-y: auto;
+        }
+    }
+    @media(min-height: 391px) {
+        .tomtom-foldable__content-body {
+            overflow-y: hidden;
+        }
+    }
+    .tomtom-foldable__header {
+        display: none;
+    }
+
+    .loader.hidden {
+        display: none;
+    }
+    .loader {
+        opacity: 0.75;
+        display: block;
+        background: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 25%;
+    }
+    .loader:before {
+        margin: 30%;
+    }
+
+    #form {
+        width: 190px;
+        min-width: 190px;
+        margin-right: 0px;
+        padding: 0 5px;
+    }
+    #form h2 {
+        margin: -2px 0px;
+        font-size: 15px;
+        letter-spacing: 0.7px;
+    }
+    .og-context #form input[type=submit] {
+        margin: 0;
+    }
+    #form input[type=submit] {
+        margin: 14px 0 0px;
+        height: 25px!important;
+        border-radius: 4px;
+    }
+    #form li *,
+    #form li {
+        cursor: pointer;
+    }
+
+    .leaflet-popup-content-wrapper .leaflet-popup-content {
+        margin: 10px;
+    }
+
+    label.select {
+        cursor: pointer;
+        margin-top: 9px;
+        height: 17px;
+        line-height: 17px;
+    }
+    label.select.empty {
+        display: none;
+    }
+    label.select li {
+        height: 21px;
+        line-height: 19px;
+    }
+    label.select {
+        background: #eaeaea;
+    }
+    label.select span.output {
+        border-left: solid 9px #eaeaea;
+    }
+    label.select ul.options::before {
+        content: ' ';
+        width: 100%;
+        height: 100%;
+        position: fixed;
+        left: 0;
+        top: 0;
+    }
+    label.select ul.options {
+        display: none;
+        list-style: none;
+        background-color: white;
+        z-index: 1001;
+        margin: 0;
+        padding: 5px 0;
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: calc(100% - 18px);
+        box-shadow: silver 0px 0px 10px;
+    }
+    label.select input[name='list-visible'] { display: none; }
+    label.select input[name='list-visible']:checked + ul.options { display: block; }
+    label.select li {
+        color: black;
+        opacity: 0.9;
+        background: #fafafa;
+        border-left: solid 9px #fafafa;
+        font-weight: 100;
+        letter-spacing: 0.5px;
+    }
+    label.select li:hover {
+        color: white;
+        background: #505050;
+        border-left: solid 9px #505050;
+    }
+    label.select::after {
+        width: 0px;
+        height: 0px;
+        content: ' ';
+        border: solid transparent 4px;
+        border-top-color: white;
+        position: absolute;
+        right: 5px;
+        top: 8px;
+        background: none;
+    }
+    label.select::before {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: block;
+        content: ' ';
+        background: #91af2d;
+        width: 18px;
+        height: 100%;
+    }
+
+    ul.cities {
+        list-style: none;
+        padding: 0;
+        margin: 7px 0 10px;
+    }
+    ul.cities li {
+        line-height: 23px;
+        letter-spacing: 0.3px;
+    }
+    ul.cities li::before {
+        content: 'x';
+        font-weight: bolder;
+        margin: 0 12px 0 7px;
+    }
+
+    ul.pois {
+        list-style: none;
+        padding: 0 0 0 25px;
+        position: relative;
+        margin: 3px 0;
+    }
+    ul.pois .text {
+        text-transform: capitalize;
+    }
+    ul.pois li {
+        line-height: 23px;
+        font-size: 15px;
+    }
+    ul.pois input:checked + .text::after {
+        content: '7';
+        color: white;
+        position: absolute;
+        left: -20px;
+        top: -2px;
+        transform: scaleX(-1) rotate(125deg);
+        font-family: monospace;
+    }
+    ul.pois input:checked + .text::before {
+        background: #91af2d;
+        border: #87a32a solid 1px;
+    }
+    ul.pois .text::before {
+        content: ' ';
+        width: 15px;
+        height: 15px;
+        background: #d7d7d7;
+        border: solid 1px #c9c9c9;
+        position: absolute;
+        left: -25px;
+        top: 2px;
+    }
+    ul.pois input[type=checkbox] {
+        display: none;
+    }
+
+    input[type='submit'] {
+        width: 100%;
+        height: 30px;
+        background: #91af2d;
+    }
+	
+</style>
+
+
+</head>
+<body class='use-all-space'>
+    <div id='loader' class='loader loader-center hidden'></div>
+    <div id='map' class='use-all-space'></div>
+    <form class='sidepanel' id='form'>        
+        <h2>Categories</h2>
+        <ul class='pois'>            
+            <li>
+            <label>
+                <input name='category' value='Adventure Sports Venue' type='checkbox'>
+                <span class='text'>Adventure Sports Venue</span>
+            </label>
+            </li>
+            
+            <li><label>
+                <input name='category' value='restaurant' type='checkbox'>
+                <span class='text'>restaurant</span>
+            </label></li>
+            <li><label>
+                <input name='category' value='hospital' type='checkbox'>
+                <span class='text'>hospital</span>
+            </label></li>
+            <li><label>
+                <input name='category' value='stadium' type='checkbox'>
+                <span class='text'>stadium</span>
+            </label></li>
+            <li><label>
+                <input name='category' value='hotel' type='checkbox'>
+                <span class='text'>hotel</span>
+            </label></li>
+        </ul>
+        <input type='submit' value='Submit'>
+    </form>
+    
+    <script src="js/preferences.js">  </script>
+    
+   	
+</body>
+</html>

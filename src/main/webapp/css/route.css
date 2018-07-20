@@ -1,0 +1,33 @@
+
+
+    .checkbox-route-representation {
+        margin-right: 5px !important;
+        margin-left: 0px !important;
+        margin-top: 0px !important;
+        position: relative;
+        vertical-align: middle;
+        bottom: 1px;
+    }
+
+    .checkbox-route-representation-label {
+        font-weight: bold;
+        margin-top: 5px;
+    }
+
+    .select-label {
+        font-weight: bold;
+    }
+
+    .loader {
+        opacity: 0.75;
+        display: block;
+        background: white;
+        width: 50px;
+        height: 50px;
+        border-radius: 25%;
+    }
+
+    .loader:before {
+        margin: 30%;
+    }
+    html{height:100%}

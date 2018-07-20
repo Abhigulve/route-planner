@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html class="use-all-space">
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="cache-control" content="max-age=60000" />
+<title>TomTom JavaScript SDK - Map</title>
+<meta name="viewport"
+	content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<link rel="stylesheet" type="text/css" href="sdk/map.css" />
+<link rel="stylesheet" type="text/css" href="sdk/elements.css" />
+<link rel="stylesheet" href="js/font-awesome/css/font-awesome.min.css">
+<script type="text/javascript" src="sdk/tomtom.min.js"></script>
+</head>
+<body class="use-all-space">
+	<div class="map-container use-all-space">
+		<div id="map" class="use-all-space"></div>
+		<div
+			class="tomtom-example-inputsWrapper tomtom-example-inputsWrapper-bottom">
+			<select id="tomtom-example-langCodesList">
+				<option value="none">None</option>
+				<option value="af-ZA">Afrikaans [af-ZA]</option>
+				<option value="ar">Arabic [ar]</option>
+				<option value="bg-BG">Bulgarian [bg-BG]</option>
+				<option value="ca-ES">Catalan (Spain) [ca-ES]</option>
+				<option value="zh-CN">Chinese (PRC) [zh-CN]</option>
+				<option value="zh-TW">Chinese (Taiwan) [zh-TW]</option>
+				<option value="cs-CZ">Czech [cs-CZ]</option>
+				<option value="da-DK">Danish [da-DK]</option>
+				<option value="nl-BE">Dutch (Belgium) [nl-BE]</option>
+				<option value="nl-NL">Dutch [nl-NL]</option>
+				<option value="en-AU">English (Australia) [en-AU]</option>
+				<option value="en-NZ">English (New Zealand) [en-NZ]</option>
+				<option value="en-GB" selected="selected">English (Great
+					Britain) [en-GB]</option>
+				<option value="en-US">English (USA) [en-US]</option>
+				<option value="et-EE">Estonian [et-EE]</option>
+				<option value="fi-FI">Finnish [fi-FI]</option>
+				<option value="fr-CA">French (Canada) [fr-CA]</option>
+				<option value="fr-FR">French [fr-FR]</option>
+				<option value="de-DE">German [de-DE]</option>
+				<option value="el-GR">Greek [el-GR]</option>
+				<option value="hr-HR">Croatian [hr-HR]</option>
+				<option value="hu-HU">Hungarian [hu-HU]</option>
+				<option value="it-IT">Italian [it-IT]</option>
+				<option value="lv-LV">Latvian [lv-LV]</option>
+				<option value="lt-LT">Lithuanian [lt-LT]</option>
+				<option value="ms-MY">Malay [ms-MY]</option>
+				<option value="no-NO">Norwegian [no-NO]</option>
+				<option value="pl-PL">Polish [pl-PL]</option>
+				<option value="pt-BR">Portuguese (Brazil) [pt-BR]</option>
+				<option value="pt-PT">Portuguese (Portugal) [pt-PT]</option>
+				<option value="ru-RU">Russian [ru-RU]</option>
+				<option value="sk-SK">Slovak [sk-SK]</option>
+				<option value="sl-SI">Slovenian [sl-SI]</option>
+				<option value="es-ES">Castilian Spanish [es-ES]</option>
+				<option value="es-419">Latin American Spanish [es-419]</option>
+				<option value="sv-SE">Swedish [sv-SE]</option>
+				<option value="tr-TR">Turkish [tr-TR]</option>
+			</select> <label for="tomtom-example-langCodesList">Language</label>
+		</div>
+	</div>
+	<script>
+		(function(tomtom, window, undefined) {
+			var langCodesList = document
+					.getElementById("tomtom-example-langCodesList");
+
+			// Setting TomTom keys
+			tomtom.searchKey("b5w0ip0dC0PPuyZ75hbmUPBcQK7IhO0V");
+
+			// Creating map
+			var map = tomtom.L.map("map", {
+				key : "b5w0ip0dC0PPuyZ75hbmUPBcQK7IhO0V"
+			});
+
+			var searchBoxInstance = tomtom.searchBox({
+				position : "topright"
+			}).addTo(map);
+
+			var searchCenterLayer = tomtom.markersView().addTo(map);
+
+			var markersLayer = L.tomTomMarkersLayer();
+
+			searchBoxInstance.on(searchBoxInstance.Event.ResultsFound,
+					function(results) {
+						drawSearchCenter();
+						markersLayer.setMarkersData(results.data).addMarkers()
+								.addTo(map);
+					});
+
+			searchBoxInstance.on(searchBoxInstance.Event.ResultsCleared,
+					function() {
+						markersLayer.clearLayers();
+					});
+
+			searchBoxInstance.on(searchBoxInstance.Event.ResultClicked,
+					function(result) {
+						markersLayer.setMarkersData([ result.data ])
+								.addMarkers().addTo(map);
+
+						var viewport = result.data.viewport;
+						if (viewport) {
+							map.fitBounds([ viewport.topLeftPoint,
+									viewport.btmRightPoint ]);
+						} else {
+							map.fitBounds(markersLayer.getBounds());
+						}
+					});
+
+			function updateLanguageSelection() {
+				var selectedLangCode = langCodesList.options[langCodesList.selectedIndex].value;
+				if (selectedLangCode === "none") {
+					selectedLangCode = "";
+				}
+				searchBoxInstance.language(selectedLangCode);
+			}
+			;
+
+			function drawSearchCenter() {
+				var currentLocation = map.getCenter();
+				var markerOptions = {
+					title : 'Search Center\nLatitude: ' + currentLocation.lat
+							+ '\nLongitude: ' + currentLocation.lng,
+					icon : tomtom.L.icon({
+						iconUrl : 'img/center_marker.svg',
+						iconSize : [ 24, 24 ],
+						iconAnchor : [ 12, 12 ]
+					})
+				};
+				searchCenterLayer.clearLayers();
+				searchCenterLayer.addLayer(
+						tomtom.L.marker([ currentLocation.lat,
+								currentLocation.lng ], markerOptions)).addTo(
+						map);
+			}
+
+			var searchTypesList = document
+					.getElementById("tomtom-example-langCodesList");
+			searchTypesList.onchange = updateLanguageSelection;
+			updateLanguageSelection();
+		})(tomtom, window);
+	</script>
+</body>
+</html>
